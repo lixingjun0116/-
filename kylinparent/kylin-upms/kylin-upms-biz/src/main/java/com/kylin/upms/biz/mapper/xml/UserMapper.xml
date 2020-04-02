@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kylin.upms.biz.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.kylin.upms.biz.entity.User">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="phone" property="phone" />
+        <result column="telephone" property="telephone" />
+        <result column="address" property="address" />
+        <result column="enabled" property="enabled" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="userface" property="userface" />
+
+    </resultMap>
+
+    <resultMap id="userandrole" type="com.kylin.upms.biz.entity.UserAndRole">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="phone" property="phone" />
+        <result column="telephone" property="telephone" />
+        <result column="address" property="address" />
+        <result column="enabled" property="enabled" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="userface" property="userface" />
+        <result column="rids" property="rids" />
+        <result column="rnameZhs" property="rnameZhs" />
+        <result column="rnames" property="rnames" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, phone, telephone, address, enabled, username, password, userface, remark
+    </sql>
+
+    <select id="getUserRole" resultMap="userandrole" parameterType="java.lang.String">
+        SELECT
+            u.*,
+            GROUP_CONCAT(r.id) rids,
+            GROUP_CONCAT(r.nameZh) rnameZhs,
+            GROUP_CONCAT(r.`name`) rnames
+        FROM
+            USER u,
+            role r,
+            user_role ur
+        WHERE
+            u.id = ur.uid
+          AND r.id = ur.rid
+          and u.username like '%${username}%'
+        GROUP BY
+            u.id
+    </select>
+  <!--CONCAT(CONCAT('%',#{username}),'%')-->
+
+    <!--重置密码-->
+    <update id="PasswordResend"  parameterType="java.lang.Object">
+        update  user  SET password=#{password},remark=0  where id=#{uid}
+    </update>
+
+    <!--修改密码-->
+    <update id="editPassword"  parameterType="java.lang.Object">
+        update  user  SET password=#{password},remark=1  where id=#{uid}
+    </update>
+
+
+</mapper>

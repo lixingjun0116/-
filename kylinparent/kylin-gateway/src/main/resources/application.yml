@@ -1,0 +1,36 @@
+spring:
+  redis:
+    host:127.0.0.1
+    port:6379
+  cloud:
+    gateway:
+      locator:
+        enabled: true
+      routes:
+      - id: kylin-auth
+        uri: lb://kylin
+        predicates:
+        - Path=/auth/oauth/**
+        filters:
+        # 验证码处理
+        - ValidateCodeGatewayFilter
+      - id: requestratelimiter_route
+        uri: lb://kylin
+        order: 10000
+        predicates:
+        - Path=/admin/**
+        filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 1  # 令牌桶每秒填充平均速率
+            redis-rate-limiter.burstCapacity: 3  # 令牌桶总容量
+            key-resolver: "#{@remoteAddrKeyResolver}" #SPEL表达式去的对应的bean
+        - StripPrefix=1
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+  application:
+    name: kylin-gateway
+server:
+  port: 9999
+
